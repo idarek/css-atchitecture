@@ -1,64 +1,61 @@
 /* ============================================================
-   FINAL CSS ARCHITECTURE 2026 — VERSION 2.0
-   Synthesised: Intrinsic Layout + Custom Brand Assets
+   CSS ARCHITECTURE 2026 — VERSION 3.0 (THE RANGE EDITION)
+   Synthesised: Intrinsic Layout + Range Syntax + Custom Assets
+   Hugo-Ready | No-JS Dependency | Baseline 2026 Standard
    ============================================================ */
 
-/* 1. DESIGN TOKENS (Your Expanded Palette)
+/* 1. DESIGN TOKENS (Brand Palette & Fluid Scales)
    ------------------------------------------------------------ */
 :root {
   /* --- Brand Colours --- */
-  --blue:        #345671;
-  --blue-dark:   #324e67;
-  --blue-light:  #557793;
-  --navy:        #123456;
-  --accent:      var(--blue);
+  --blue:          #345671;
+  --blue-dark:     #324e67;
+  --blue-light:    #557793;
+  --navy:          #123456;
+  --text-main:     #525252;
+  --text-alert:    #b01c1c;
+  --gray-warm:     #F1F0EE;
+  --gray-bg:       #f3f3f3;
+  --white:         #ffffff;
+  --black:         #000000;
 
-  /* --- Neutrals (Organised) --- */
-  --white:       #ffffff;
-  --black:       #000000;
-  --gray-warm:   #F1F0EE;
-  --gray-bg:     #f3f3f3;
-  --gray-light:  #eeeeee;
-  --gray-medium: #cccccc;
-  --gray-dark:   #444444;
-  --text-main:   #525252;
-  --text-alert:  #b01c1c;
+  /* --- Social & Utility --- */
+  --green:         #8EC732;
+  --orange:        #FFA000;
+  --linkedin:      #0077b5;
+  --instagram:     #c73b92;
 
-  /* --- Feedback & Socials --- */
-  --green:       #8EC732;
-  --orange:      #FFA000;
-  --pdf-red:     #f2594b;
-  --linkedin:    #0077b5;
-  --instagram:   #c73b92;
-
-  /* --- Typography --- */
-  --font-family: Roboto, Helvetica, Arial, system-ui, sans-serif;
+  /* --- Typographic Scale (Fluid) --- */
+  --font-main:     Roboto, Helvetica, Arial, system-ui, sans-serif;
+  --text-base:     clamp(1rem, 1vw + 0.75rem, 1.125rem);
+  --text-xl:       clamp(1.5rem, 2.5vw + 0.75rem, 2.5rem);
+  --text-3xl:      clamp(2.5rem, 6vw + 0.25rem, 5rem);
   
-  /* --- Fluid Scales (The 2026 Engine) --- */
-  --text-base:   clamp(1rem, 1vw + 0.75rem, 1.125rem);
-  --text-xl:     clamp(1.5rem, 2.5vw + 0.75rem, 2.5rem);
-  --text-3xl:    clamp(2.5rem, 6vw + 0.25rem, 5rem);
-  
-  --space-md:    clamp(0.75rem, 2vw, 1.25rem);
+  /* --- Layout Tokens --- */
+  --space-md:      clamp(0.75rem, 2vw, 1.25rem);
   --container-max: 1440px;
-  
-  /* --- Global Behaviour --- */
-  overscroll-behavior: none; /* Prevents mobile pull-to-refresh bounce */
+  --radius:        8px;
+  --duration:      250ms;
+  --ease:          cubic-bezier(0.4, 0, 0.2, 1);
+
+  overscroll-behavior: none;
 }
 
-/* 2. UNIVERSAL RESET & RENDERING
+/* 2. MODERN RESET & RENDERING
    ------------------------------------------------------------ */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 html {
-  font-family: var(--font-family);
+  font-family: var(--font-main);
   font-size: 16px;
   scroll-behavior: smooth;
-  overflow-y: scroll; /* Prevents horizontal jump on short pages */
+  overflow-y: scroll;
   scrollbar-gutter: stable;
   scrollbar-color: var(--blue) transparent;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
 }
 
 body {
@@ -67,38 +64,45 @@ body {
   background-color: var(--white);
   line-height: 1.7;
   
-  /* Typographic Polish */
+  /* High-End Typographic Rendering */
   font-variant-ligatures: common-ligatures;
   font-kerning: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 3. MODERN APIs (2026 Standards)
-   ------------------------------------------------------------ */
-
-/* Native View Transitions (No JS required for page fades) */
+/* Native Page Transitions */
 @view-transition {
   navigation: auto;
 }
 
-/* Fluid Heading Scaling */
-h1 { font-size: var(--text-3xl); text-wrap: balance; }
-p  { text-wrap: pretty; max-inline-size: 65ch; }
-
-/* 4. ACCESSIBILITY (SR-ONLY & SKIP LINKS)
+/* 3. TYPOGRAPHY & CONTENT
    ------------------------------------------------------------ */
+h1 { font-size: var(--text-3xl); text-wrap: balance; line-height: 1.1; }
+h2 { font-size: var(--text-xl); text-wrap: balance; }
 
-/* Logical properties used for the Skip Link */
+p, li { 
+  max-inline-size: 65ch; /* Optimal reading length */
+  text-wrap: pretty;     /* Prevents orphans */
+  margin-block-end: 1.5rem;
+}
+
+img, svg, video {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+/* 4. ACCESSIBILITY (SKIP LINKS & SR)
+   ------------------------------------------------------------ */
 .skip-link {
   position: absolute;
-  inset-inline-start: -9999px; /* Logical 'left' */
+  inset-inline-start: -9999px;
   z-index: 999;
   padding: 1rem;
   background: var(--black);
   color: var(--white);
   opacity: 0;
-  transition: opacity var(--duration) var(--ease-out);
 }
 
 .skip-link:focus {
@@ -107,7 +111,6 @@ p  { text-wrap: pretty; max-inline-size: 65ch; }
   opacity: 1;
 }
 
-/* Screen Reader Only utility */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -120,7 +123,34 @@ p  { text-wrap: pretty; max-inline-size: 65ch; }
   border: 0;
 }
 
-/* 5. LAYOUT PRIMITIVES (INTRINSIC)
+/* 5. STRUCTURAL BREAKPOINTS (MODERN RANGE SYNTAX)
+   ------------------------------------------------------------ */
+
+/* Small Phones to Large Phones (spacing hook) */
+@media (width >= 480px) {
+  :root { --space-md: clamp(1rem, 3vw, 1.5rem); }
+}
+
+/* Tablet/Structural Shift (The Hugo Nav Switch) */
+@media (width >= 640px) {
+  .site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-block: var(--space-md);
+  }
+}
+
+/* Desktop/Large Screen Hook */
+@media (width >= 1024px) {
+  .layout-grid {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: var(--space-md);
+  }
+}
+
+/* 6. INTRINSIC & CONTAINER LAYOUTS
    ------------------------------------------------------------ */
 .container {
   max-inline-size: var(--container-max);
@@ -128,17 +158,29 @@ p  { text-wrap: pretty; max-inline-size: 65ch; }
   padding-inline: clamp(1rem, 5vw, 3rem);
 }
 
+/* Self-wrapping grid: Handles the "835px problem" automatically */
 .grid-auto {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: var(--space-md);
 }
 
-/* 6. UTILITIES
+/* Component Autonomy */
+.component-parent { container-type: inline-size; }
+
+@container (width >= 500px) {
+  .card-feature {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+}
+
+/* 7. UTILITIES & MOTION
    ------------------------------------------------------------ */
-.hidden { display: none; }
 .text-center { text-align: center; }
-.bold { font-weight: bold; }
+.bold        { font-weight: bold; }
+.m-is-auto   { margin-inline-start: auto; } /* Logical "Margin Left: Auto" */
 
 @media (prefers-reduced-motion: reduce) {
   * {
