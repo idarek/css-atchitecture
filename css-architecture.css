@@ -1,7 +1,7 @@
 /* ============================================================
-   CSS ARCHITECTURE 2026 — VERSION 3.0 (THE RANGE EDITION)
-   Synthesised: Intrinsic Layout + Range Syntax + Custom Assets
-   Hugo-Ready | No-JS Dependency | Baseline 2026 Standard
+   CSS ARCHITECTURE 2026 — VERSION 4.0 (THE TOTAL PACKAGE)
+   Synthesised: Intrinsic Design + Range Syntax + Safe Area Insets
+   Philosophy: Absolute Hardware Awareness & Content Fluidity
    ============================================================ */
 
 /* 1. DESIGN TOKENS (Brand Palette & Fluid Scales)
@@ -13,31 +13,28 @@
   --blue-light:    #557793;
   --navy:          #123456;
   --text-main:     #525252;
-  --text-alert:    #b01c1c;
   --gray-warm:     #F1F0EE;
-  --gray-bg:       #f3f3f3;
   --white:         #ffffff;
   --black:         #000000;
 
   /* --- Social & Utility --- */
-  --green:         #8EC732;
-  --orange:        #FFA000;
   --linkedin:      #0077b5;
   --instagram:     #c73b92;
+  --text-alert:    #b01c1c;
 
-  /* --- Typographic Scale (Fluid) --- */
+  /* --- Fluid Typographic Scale --- */
   --font-main:     Roboto, Helvetica, Arial, system-ui, sans-serif;
   --text-base:     clamp(1rem, 1vw + 0.75rem, 1.125rem);
   --text-xl:       clamp(1.5rem, 2.5vw + 0.75rem, 2.5rem);
   --text-3xl:      clamp(2.5rem, 6vw + 0.25rem, 5rem);
   
-  /* --- Layout Tokens --- */
-  --space-md:      clamp(0.75rem, 2vw, 1.25rem);
+  /* --- Fluid Spacing Tokens --- */
+  --space-md:      clamp(1rem, 3vw, 1.5rem);
   --container-max: 1440px;
-  --radius:        8px;
   --duration:      250ms;
   --ease:          cubic-bezier(0.4, 0, 0.2, 1);
 
+  /* Global Hardware Logic */
   overscroll-behavior: none;
 }
 
@@ -64,14 +61,16 @@ body {
   background-color: var(--white);
   line-height: 1.7;
   
-  /* High-End Typographic Rendering */
+  /* High-End Rendering */
   font-variant-ligatures: common-ligatures;
   font-kerning: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Safe Area Awareness for Full-Bleed Backgrounds */
+  padding-block-end: env(safe-area-inset-bottom);
 }
 
-/* Native Page Transitions */
 @view-transition {
   navigation: auto;
 }
@@ -82,8 +81,8 @@ h1 { font-size: var(--text-3xl); text-wrap: balance; line-height: 1.1; }
 h2 { font-size: var(--text-xl); text-wrap: balance; }
 
 p, li { 
-  max-inline-size: 65ch; /* Optimal reading length */
-  text-wrap: pretty;     /* Prevents orphans */
+  max-inline-size: 65ch; 
+  text-wrap: pretty;
   margin-block-end: 1.5rem;
 }
 
@@ -93,24 +92,63 @@ img, svg, video {
   block-size: auto;
 }
 
-/* 4. ACCESSIBILITY (SKIP LINKS & SR)
+/* 4. THE INTRINSIC CONTAINER (WITH SAFE AREAS)
    ------------------------------------------------------------ */
-.skip-link {
-  position: absolute;
-  inset-inline-start: -9999px;
-  z-index: 999;
-  padding: 1rem;
-  background: var(--black);
-  color: var(--white);
-  opacity: 0;
+.container {
+  max-inline-size: var(--container-max);
+  margin-inline: auto;
+  
+  /* The "Absolute Best" Padding Strategy:
+     Uses the larger of either our design-intended spacing 
+     OR the hardware's required safe-area inset.
+  */
+  padding-inline-start: max(var(--space-md), env(safe-area-inset-left));
+  padding-inline-end:   max(var(--space-md), env(safe-area-inset-right));
 }
 
-.skip-link:focus {
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
-  opacity: 1;
+/* 5. STRUCTURAL BREAKPOINTS (RANGE SYNTAX)
+   ------------------------------------------------------------ */
+
+/* Mobile Landscape & Tablet Structural Shift */
+@media (width >= 640px) {
+  .site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Extra padding for top-notches in landscape */
+    padding-block-start: max(var(--space-md), env(safe-area-inset-top));
+  }
 }
 
+/* Desktop Logic */
+@media (width >= 1024px) {
+  .layout-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: var(--space-md);
+  }
+}
+
+/* 6. COMPONENT AUTONOMY & INTRINSIC GRIDS
+   ------------------------------------------------------------ */
+.grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--space-md);
+}
+
+.component-zone { container-type: inline-size; }
+
+@container (width >= 500px) {
+  .card-feature {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+}
+
+/* 7. ACCESSIBILITY & UTILITIES
+   ------------------------------------------------------------ */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -123,64 +161,19 @@ img, svg, video {
   border: 0;
 }
 
-/* 5. STRUCTURAL BREAKPOINTS (MODERN RANGE SYNTAX)
-   ------------------------------------------------------------ */
-
-/* Small Phones to Large Phones (spacing hook) */
-@media (width >= 480px) {
-  :root { --space-md: clamp(1rem, 3vw, 1.5rem); }
+.skip-link {
+  position: absolute;
+  inset-inline-start: -9999px;
+  z-index: 999;
+  padding: 1rem;
+  background: var(--black);
+  color: var(--white);
 }
 
-/* Tablet/Structural Shift (The Hugo Nav Switch) */
-@media (width >= 640px) {
-  .site-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-block: var(--space-md);
-  }
+.skip-link:focus {
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
 }
-
-/* Desktop/Large Screen Hook */
-@media (width >= 1024px) {
-  .layout-grid {
-    display: grid;
-    grid-template-columns: 250px 1fr;
-    gap: var(--space-md);
-  }
-}
-
-/* 6. INTRINSIC & CONTAINER LAYOUTS
-   ------------------------------------------------------------ */
-.container {
-  max-inline-size: var(--container-max);
-  margin-inline: auto;
-  padding-inline: clamp(1rem, 5vw, 3rem);
-}
-
-/* Self-wrapping grid: Handles the "835px problem" automatically */
-.grid-auto {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-  gap: var(--space-md);
-}
-
-/* Component Autonomy */
-.component-parent { container-type: inline-size; }
-
-@container (width >= 500px) {
-  .card-feature {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-  }
-}
-
-/* 7. UTILITIES & MOTION
-   ------------------------------------------------------------ */
-.text-center { text-align: center; }
-.bold        { font-weight: bold; }
-.m-is-auto   { margin-inline-start: auto; } /* Logical "Margin Left: Auto" */
 
 @media (prefers-reduced-motion: reduce) {
   * {
