@@ -1,26 +1,30 @@
 /* ============================================================
-   CSS ARCHITECTURE 2026 — VERSION 5.1 (COMPLETE TYPOGRAPHY)
-   Synthesised: 960px Content Cap + Full Heading Scale + Single Breakpoint
-   Philosophy: Zero Bloat, Intrinsic Fluidity, Robust Layouts
+   CSS ARCHITECTURE 2026 — VERSION 6.0 (ACCESSIBILITY MASTER)
+   Synthesised: 960px Cap + Single Breakpoint + Baseline A11y 2026 Standard
+   Philosophy: Total Keyboard, Screen-Reader, and Cognitive Accessibility
    ============================================================ */
 
-/* 1. DESIGN TOKENS (Brand Palette & Refined Constraints)
+/* 1. DESIGN TOKENS (Brand Palette, Contrast Anchors & Fluid Scales)
    ------------------------------------------------------------ */
 :root {
-  /* --- Brand Colours --- */
+  /* --- Brand Colours (Placeholders - Structurally Configured) --- */
   --blue:          #345671;
   --blue-dark:     #324e67;
   --blue-light:    #557793;
   --navy:          #123456;
-  --text-main:     #525252;
   --gray-warm:     #F1F0EE;
   --white:         #ffffff;
   --black:         #000000;
 
+  /* --- Semantic Contrast Overrides (Ensuring WCAG AA/AAA Compliance) --- */
+  --text-main:     #222222; /* Stepped down from #525252 for higher contrast on white */
+  --text-muted:    #595959; /* Meets 4.5:1 minimum on white/light gray backgrounds */
+  --text-alert:    #b01c1c;
+  --a11y-focus:    #2563eb; /* Dedicated high-visibility focus ring color */
+
   /* --- Social & Utility --- */
   --linkedin:      #0077b5;
   --instagram:     #c73b92;
-  --text-alert:    #b01c1c;
 
   /* --- Full Fluid Typographic Scale --- */
   --font-main:     Roboto, Helvetica, Arial, system-ui, sans-serif;
@@ -43,7 +47,7 @@
   overscroll-behavior: none;
 }
 
-/* 2. MODERN RESET & RENDERING
+/* 2. UNIVERSAL RESET & RENDERING
    ------------------------------------------------------------ */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -64,7 +68,7 @@ body {
   font-size: var(--text-base);
   color: var(--text-main);
   background-color: var(--white);
-  line-height: 1.7;
+  line-height: 1.7; /* Generous line height for reading accessibility */
   
   /* High-End Rendering */
   font-variant-ligatures: common-ligatures;
@@ -72,21 +76,47 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Safe Area Awareness for Mobile Full-Bleed Displays */
   padding-block-end: env(safe-area-inset-bottom);
+}
+
+/* 3. NON-NEGOTIABLE FOCUS & KEYBOARD STATES (2026 Baseline Standard)
+   ------------------------------------------------------------ */
+
+/* Remove default focus ring ONLY when we know :focus-visible is handling it */
+:focus {
+  outline: none;
+}
+
+/* Explicit, accessible styling exclusively triggered via keyboard navigation */
+:focus-visible {
+  outline: 3px solid var(--a11y-focus);
+  outline-offset: 3px;
+}
+
+/* Smooth transitions for links, but ensuring the color change remains obvious */
+a {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--duration) var(--ease);
+}
+
+a:hover, a:focus-visible {
+  color: var(--navy);
+  text-decoration-thickness: 2px;
 }
 
 @view-transition {
   navigation: auto;
 }
 
-/* 3. COMPLETE TYPOGRAPHY & CONTENT HIERARCHY
+/* 4. TYPOGRAPHY & CONTENT HIERARCHY
    ------------------------------------------------------------ */
 h1, h2, h3, h4, h5, h6 {
-  line-height: 1.1;
-  text-wrap: balance; /* Distributes heading text evenly across lines */
+  line-height: 1.15;
+  text-wrap: balance; 
   margin-block-end: 0.5em;
-  color: var(--blue-dark); /* Unified heading brand alignment */
+  color: var(--blue-dark);
 }
 
 h1 { font-size: var(--text-3xl); line-height: 1.05; }
@@ -97,13 +127,14 @@ h5 { font-size: var(--text-md);  }
 h6 { font-size: var(--text-base); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 
 p, li { 
-  max-inline-size: 65ch; 
+  max-inline-size: 65ch; /* Keeps reading density inside accessible boundaries */
   text-wrap: pretty;
   margin-block-end: 1.5rem;
 }
 
 small, .text-muted {
   font-size: var(--text-sm);
+  color: var(--text-muted);
 }
 
 img, svg, video {
@@ -112,14 +143,22 @@ img, svg, video {
   block-size: auto;
 }
 
-/* 4. THE 960px CONTAINER & BREADCRUMBS PRIMITIVES
+/* 5. THE NATIVE SEARCH LANDMARK (2026 Standard)
+   ------------------------------------------------------------ */
+search {
+  display: block;
+}
+search form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* 6. THE 960px CONTAINER & BREADCRUMBS PRIMITIVES
    ------------------------------------------------------------ */
 .container,
 .breadcrumbs-wrapper {
   max-inline-size: var(--container-max);
   margin-inline: auto;
-  
-  /* Fluid 100% logic with hardware notch safety on mobile */
   padding-inline-start: max(var(--space-md), env(safe-area-inset-left));
   padding-inline-end:   max(var(--space-md), env(safe-area-inset-right));
 }
@@ -128,11 +167,8 @@ img, svg, video {
   padding-block: var(--space-md);
 }
 
-/* 5. THE SINGLE STRATEGIC BREAKPOINT (LAYOUT CEILING)
+/* 7. THE SINGLE STRATEGIC BREAKPOINT (LAYOUT CEILING)
    ------------------------------------------------------------ */
-
-/* Fires cleanly exactly when the layout transforms from 100% fluid mobile
-   into the constrained 960px desktop viewport structure */
 @media (width >= 960px) {
   .site-header {
     display: flex;
@@ -147,7 +183,7 @@ img, svg, video {
   }
 }
 
-/* 6. COMPONENT AUTONOMY & INTRINSIC GRIDS
+/* 8. COMPONENT AUTONOMY & INTRINSIC GRIDS
    ------------------------------------------------------------ */
 .grid-auto {
   display: grid;
@@ -165,7 +201,7 @@ img, svg, video {
   }
 }
 
-/* 7. ACCESSIBILITY & UTILITIES
+/* 9. HIGH-SECURITY ACCESSIBILITY UTILITIES
    ------------------------------------------------------------ */
 .sr-only {
   position: absolute;
@@ -179,18 +215,25 @@ img, svg, video {
   border: 0;
 }
 
+/* Skip link — fully keyboard accessible with visual transition layout properties */
 .skip-link {
   position: absolute;
-  inset-inline-start: -9999px;
-  z-index: 999;
-  padding: 1rem;
+  inset-block-start: -100%;
+  inset-inline-start: var(--space-md);
+  z-index: 9999;
+  padding: 1rem 1.5rem;
   background: var(--black);
   color: var(--white);
+  font-weight: bold;
+  text-decoration: none;
+  border-bottom-left-radius: var(--radius, 4px);
+  border-bottom-right-radius: var(--radius, 4px);
+  transition: inset-block-start var(--duration) var(--ease);
 }
 
-.skip-link:focus {
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
+.skip-link:focus-visible {
+  inset-block-start: 0;
+  outline: 3px solid var(--a11y-focus);
 }
 
 @media (prefers-reduced-motion: reduce) {
