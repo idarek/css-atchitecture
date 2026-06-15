@@ -1,10 +1,10 @@
 /* ============================================================
-   CSS ARCHITECTURE 2026 — VERSION 4.0 (THE TOTAL PACKAGE)
-   Synthesised: Intrinsic Design + Range Syntax + Safe Area Insets
-   Philosophy: Absolute Hardware Awareness & Content Fluidity
+   CSS ARCHITECTURE 2026 — VERSION 5.0 (CONSTRAINED EDITION)
+   Synthesised: 960px Content Cap + Single Breakpoint + Hardware Awareness
+   Philosophy: Zero Bloat, Intrinsic Fluidity, Robust Layouts
    ============================================================ */
 
-/* 1. DESIGN TOKENS (Brand Palette & Fluid Scales)
+/* 1. DESIGN TOKENS (Brand Palette & Refined Constraints)
    ------------------------------------------------------------ */
 :root {
   /* --- Brand Colours --- */
@@ -28,9 +28,9 @@
   --text-xl:       clamp(1.5rem, 2.5vw + 0.75rem, 2.5rem);
   --text-3xl:      clamp(2.5rem, 6vw + 0.25rem, 5rem);
   
-  /* --- Fluid Spacing Tokens --- */
+  /* --- Fluid Spacing & 960px Layout Constraints --- */
   --space-md:      clamp(1rem, 3vw, 1.5rem);
-  --container-max: 1440px;
+  --container-max: 960px; /* Locked tightly to your desktop design requirement */
   --duration:      250ms;
   --ease:          cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -67,7 +67,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Safe Area Awareness for Full-Bleed Backgrounds */
+  /* Safe Area Awareness for Mobile Full-Bleed Displays */
   padding-block-end: env(safe-area-inset-bottom);
 }
 
@@ -92,39 +92,37 @@ img, svg, video {
   block-size: auto;
 }
 
-/* 4. THE INTRINSIC CONTAINER (WITH SAFE AREAS)
+/* 4. THE 960px CONTAINER & BREADCRUMBS PRIMITIVES
    ------------------------------------------------------------ */
-.container {
+.container,
+.breadcrumbs-wrapper {
   max-inline-size: var(--container-max);
   margin-inline: auto;
   
-  /* The "Absolute Best" Padding Strategy:
-     Uses the larger of either our design-intended spacing 
-     OR the hardware's required safe-area inset.
-  */
+  /* Fluid 100% logic with hardware notch safety on mobile */
   padding-inline-start: max(var(--space-md), env(safe-area-inset-left));
   padding-inline-end:   max(var(--space-md), env(safe-area-inset-right));
 }
 
-/* 5. STRUCTURAL BREAKPOINTS (RANGE SYNTAX)
+.breadcrumbs-wrapper {
+  padding-block: var(--space-md);
+}
+
+/* 5. THE SINGLE STRATEGIC BREAKPOINT (LAYOUT CEILING)
    ------------------------------------------------------------ */
 
-/* Mobile Landscape & Tablet Structural Shift */
-@media (width >= 640px) {
+/* Fires cleanly exactly when the layout transforms from 100% fluid mobile
+   into the constrained 960px desktop viewport structure */
+@media (width >= 960px) {
   .site-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* Extra padding for top-notches in landscape */
     padding-block-start: max(var(--space-md), env(safe-area-inset-top));
   }
-}
-
-/* Desktop Logic */
-@media (width >= 1024px) {
-  .layout-grid {
-    display: grid;
-    grid-template-columns: 280px 1fr;
+  
+  .site-nav {
+    display: flex;
     gap: var(--space-md);
   }
 }
