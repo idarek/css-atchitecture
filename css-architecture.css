@@ -1,13 +1,13 @@
 /* ============================================================
-   CSS ARCHITECTURE 2026 — VERSION 6.0 (ACCESSIBILITY MASTER)
-   Synthesised: 960px Cap + Single Breakpoint + Baseline A11y 2026 Standard
+   CSS ARCHITECTURE 2026 — VERSION 6.1 (REFINED ACCESSIBILITY)
+   Synthesised: 960px Cap + Single Breakpoint + Precise HTML Sync
    Philosophy: Total Keyboard, Screen-Reader, and Cognitive Accessibility
    ============================================================ */
 
 /* 1. DESIGN TOKENS (Brand Palette, Contrast Anchors & Fluid Scales)
    ------------------------------------------------------------ */
 :root {
-  /* --- Brand Colours (Placeholders - Structurally Configured) --- */
+  /* --- Brand Colours (Placeholders) --- */
   --blue:          #345671;
   --blue-dark:     #324e67;
   --blue-light:    #557793;
@@ -16,11 +16,11 @@
   --white:         #ffffff;
   --black:         #000000;
 
-  /* --- Semantic Contrast Overrides (Ensuring WCAG AA/AAA Compliance) --- */
-  --text-main:     #222222; /* Stepped down from #525252 for higher contrast on white */
-  --text-muted:    #595959; /* Meets 4.5:1 minimum on white/light gray backgrounds */
+  /* --- Semantic Contrast Overrides --- */
+  --text-main:     #222222; /* High contrast variant for readability */
+  --text-muted:    #595959; /* Meets 4.5:1 minimum on light backgrounds */
   --text-alert:    #b01c1c;
-  --a11y-focus:    #2563eb; /* Dedicated high-visibility focus ring color */
+  --a11y-focus:    #2563eb; /* High-visibility keyboard focus ring */
 
   /* --- Social & Utility --- */
   --linkedin:      #0077b5;
@@ -38,7 +38,7 @@
   --text-3xl:      clamp(2.5rem,   6vw    + 0.25rem, 5rem);
   
   /* --- Fluid Spacing & 960px Layout Constraints --- */
-  --space-md:      clamp(1rem, 3vw, 1.5rem);
+  --space-md:      clamp(1rem, 3vw, 1.5rem); /* Max 1.5rem per side = 3rem total padding */
   --container-max: 960px;
   --duration:      250ms;
   --ease:          cubic-bezier(0.4, 0, 0.2, 1);
@@ -68,7 +68,7 @@ body {
   font-size: var(--text-base);
   color: var(--text-main);
   background-color: var(--white);
-  line-height: 1.7; /* Generous line height for reading accessibility */
+  line-height: 1.7;
   
   /* High-End Rendering */
   font-variant-ligatures: common-ligatures;
@@ -79,21 +79,17 @@ body {
   padding-block-end: env(safe-area-inset-bottom);
 }
 
-/* 3. NON-NEGOTIABLE FOCUS & KEYBOARD STATES (2026 Baseline Standard)
+/* 3. FOCUS & KEYBOARD STATES
    ------------------------------------------------------------ */
-
-/* Remove default focus ring ONLY when we know :focus-visible is handling it */
 :focus {
   outline: none;
 }
 
-/* Explicit, accessible styling exclusively triggered via keyboard navigation */
 :focus-visible {
   outline: 3px solid var(--a11y-focus);
   outline-offset: 3px;
 }
 
-/* Smooth transitions for links, but ensuring the color change remains obvious */
 a {
   color: var(--blue);
   text-decoration: underline;
@@ -127,7 +123,7 @@ h5 { font-size: var(--text-md);  }
 h6 { font-size: var(--text-base); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 
 p, li { 
-  max-inline-size: 65ch; /* Keeps reading density inside accessible boundaries */
+  max-inline-size: 65ch; 
   text-wrap: pretty;
   margin-block-end: 1.5rem;
 }
@@ -143,7 +139,7 @@ img, svg, video {
   block-size: auto;
 }
 
-/* 5. THE NATIVE SEARCH LANDMARK (2026 Standard)
+/* 5. NATIVE SEARCH ELEMENT
    ------------------------------------------------------------ */
 search {
   display: block;
@@ -169,7 +165,10 @@ search form {
 
 /* 7. THE SINGLE STRATEGIC BREAKPOINT (LAYOUT CEILING)
    ------------------------------------------------------------ */
-@media (width >= 960px) {
+
+/* Aligned cleanly to complement the HTML 'sizes' attribute syntax,
+   ensuring universal fallback parsing across legacy browser engines */
+@media (min-width: 960px) {
   .site-header {
     display: flex;
     justify-content: space-between;
@@ -215,7 +214,6 @@ search form {
   border: 0;
 }
 
-/* Skip link — fully keyboard accessible with visual transition layout properties */
 .skip-link {
   position: absolute;
   inset-block-start: -100%;
