@@ -1,7 +1,18 @@
 /* ============================================================
-   CSS ARCHITECTURE 2026 – VERSION 6.1 (REFINED ACCESSIBILITY)
-   Synthesised: 960px Cap + Single Breakpoint + Precise HTML Sync
+   CSS ARCHITECTURE 2026 – VERSION 6.2 (ACCESSIBILITY CORRECTIONS)
+   Synthesised: 960px Cap + Single Breakpoint + User Preferences First
    Philosophy: Total Keyboard, Screen-Reader, and Cognitive Accessibility
+   ------------------------------------------------------------
+   6.2 changes:
+   - Respect the user's font-size setting (html 100%, em breakpoint)
+   - text-size-adjust: 100% (never block mobile text scaling)
+   - Two-tone focus ring, visible on light AND dark backgrounds
+   - Removed redundant :focus reset
+   - Smooth scroll & view transitions gated by prefers-reduced-motion
+   - prefers-contrast: more support; forced-colours safe skip link
+   - Corrected contrast ratios; restored #525252 body text
+   - Figure, figcaption & linked-image primitives
+   - Nav lists excluded from prose spacing
    ============================================================ */
 
 /* 1. DESIGN TOKENS (Brand Palette, Contrast Anchors & Fluid Scales)
@@ -16,11 +27,18 @@
   --white:         #ffffff;
   --black:         #000000;
 
-  /* --- Semantic Contrast Overrides --- */
-  --text-main:     #222222; /* High contrast variant for readability */
-  --text-muted:    #595959; /* Meets 4.5:1 minimum on light backgrounds */
-  --text-alert:    #b01c1c;
-  --a11y-focus:    #2563eb; /* High-visibility keyboard focus ring */
+  /* --- Semantic Text Colours ---
+     Ratios on --white / --gray-warm (WCAG 2.2: AA 4.5:1, AAA 7:1).
+     prefers-contrast: more overrides these in section 10. */
+  --text-main:     #525252; /* 7.8:1 / 6.9:1 – AAA body text (brand value restored) */
+  --text-muted:    #6b6b6b; /* 5.3:1 / 4.7:1 – AA, visibly lighter than --text-main */
+  --text-alert:    #b01c1c; /* 6.9:1 on white */
+
+  /* --- Focus Indicator (two-tone: ring + halo, see section 3) --- */
+  --a11y-focus:      #2563eb;      /* 5.2:1 on white – inner ring */
+  --a11y-focus-halo: var(--white); /* outer halo – keeps ring visible on --navy / --blue */
+  --focus-width:     3px;
+  --focus-offset:    2px;
 
   /* --- Social & Utility --- */
   --linkedin:      #0077b5;
@@ -40,6 +58,7 @@
   /* --- Fluid Spacing & 960px Layout Constraints --- */
   --space-md:      clamp(1rem, 3vw, 1.5rem); /* Max 1.5rem per side = 3rem total padding */
   --container-max: 960px;
+  --radius:        4px;
   --duration:      250ms;
   --ease:          cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -55,13 +74,22 @@
 
 html {
   font-family: var(--font-main);
-  font-size: 16px;
-  scroll-behavior: smooth;
-  overflow-y: scroll;
+
+  /* A11y: 100% = the user's own browser font-size setting (16px by default).
+     A fixed px value overrides low-vision users' preferences. */
+  font-size: 100%;
+
+  /* Reserves scrollbar space so the layout never shifts.
+     Replaces overflow-y: scroll (both did the same job). */
   scrollbar-gutter: stable;
   scrollbar-color: var(--blue) transparent;
-  -webkit-text-size-adjust: none;
-  text-size-adjust: none;
+
+  /* A11y: 100% stops iOS from inflating text in landscape but keeps
+     user zoom and text scaling. 'none' can block both in some engines. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+
+  /* scroll-behavior: smooth moved to section 3 (reduced-motion gated) */
 }
 
 body {
@@ -79,17 +107,29 @@ body {
   padding-block-end: env(safe-area-inset-bottom);
 }
 
-/* 3. FOCUS & KEYBOARD STATES
+/* 3. FOCUS, LINKS & MOTION PREFERENCES
    ------------------------------------------------------------ */
-:focus {
-  outline: none;
-}
 
+/* No global ":focus { outline: none }" reset (removed in 6.2).
+   Browsers already decide natively when to show focus rings, so the reset
+   added nothing and could strip focus wherever :focus-visible doesn't match. */
+
+/* Two-tone focus ring (WCAG 2.4.7, 2.4.11, 1.4.11):
+   - outline    = blue ring (5.2:1 on white)
+   - box-shadow = white halo outside the ring, so it stays visible on dark
+     brand backgrounds where blue alone drops to ~1.5–2.5:1.
+   In forced-colours mode the browser drops box-shadow but keeps the outline
+   (recoloured to a system colour), so the indicator never disappears.
+   Note: replaces any component box-shadow while focused. */
 :focus-visible {
-  outline: 3px solid var(--a11y-focus);
-  outline-offset: 3px;
+  outline: var(--focus-width) solid var(--a11y-focus);
+  outline-offset: var(--focus-offset);
+  box-shadow: 0 0 0 calc(var(--focus-offset) + var(--focus-width) * 2) var(--a11y-focus-halo);
 }
 
+/* Links: the underline is required, not decoration. --blue and --text-main
+   have almost the same luminance (~1:1), so colour alone can't mark a link
+   (WCAG 1.4.1 Use of Color). */
 a {
   color: var(--blue);
   text-decoration: underline;
@@ -102,8 +142,13 @@ a:hover, a:focus-visible {
   text-decoration-thickness: 2px;
 }
 
-@view-transition {
-  navigation: auto;
+/* Motion opt-in: smooth scrolling and cross-document view transitions only
+   run for users who haven't asked for reduced motion. The "*" selector in
+   section 9 doesn't match view-transition pseudo-elements, so gating here
+   is the reliable fix. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  @view-transition { navigation: auto; }
 }
 
 /* 4. TYPOGRAPHY & CONTENT HIERARCHY
@@ -122,8 +167,11 @@ h4 { font-size: var(--text-lg);  }
 h5 { font-size: var(--text-md);  }
 h6 { font-size: var(--text-base); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 
-p, li { 
-  max-inline-size: 65ch; 
+/* Prose rhythm. Lists inside <nav> (menus, breadcrumbs) are excluded so they
+   don't pick up paragraph spacing or the 65ch measure. */
+p,
+li:not(nav li) {
+  max-inline-size: 65ch;
   text-wrap: pretty;
   margin-block-end: 1.5rem;
 }
@@ -137,6 +185,38 @@ img, svg, video {
   display: block;
   max-inline-size: 100%;
   block-size: auto;
+}
+
+/* Figures & captions (standard and linked images)
+   - The caption sits outside any link, so it is read as a description of
+     the figure, not as part of the link's name.
+   - Start-aligned, not centred: ragged centred lines are harder to follow
+     for low-vision and dyslexic readers. */
+figure {
+  margin-inline: 0;
+  margin-block: 0 2rem;
+}
+
+figcaption {
+  margin-block-start: 0.75rem;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+
+/* Linked images – [![alt](img.jpg "caption")](img.jpg)
+   :has() finds them without a Hugo class; the separate lightbox script
+   attaches to the same links. fit-content makes the focus ring hug the
+   image instead of spanning the whole column. */
+a:has(> picture, > img) {
+  display: block;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  border-radius: var(--radius);
+}
+
+a:has(> picture, > img) img {
+  border-radius: var(--radius);
 }
 
 /* 5. NATIVE SEARCH ELEMENT
@@ -166,9 +246,15 @@ search form {
 /* 7. THE SINGLE STRATEGIC BREAKPOINT (LAYOUT CEILING)
    ------------------------------------------------------------ */
 
-/* Aligned cleanly to complement the HTML 'sizes' attribute syntax,
-   ensuring universal fallback parsing across legacy browser engines */
-@media (min-width: 960px) {
+/* 60em = 960px at the default 16px font size.
+   em (not px) lets the breakpoint follow the user's font-size setting: with a
+   24px default, the mobile layout holds until 1440px, so enlarged text never
+   gets squeezed into the desktop nav. (em in media queries always uses the
+   browser default, never the html font-size.)
+   Range syntax matches the @container query in section 8. The HTML 'sizes'
+   attribute is separate from this rule: its (min-width: 960px) fallback only
+   serves browsers that ignore sizes="auto". */
+@media (width >= 60em) {
   .site-header {
     display: flex;
     justify-content: space-between;
@@ -209,11 +295,14 @@ search form {
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%); /* replaces deprecated clip: rect() */
   white-space: nowrap;
   border: 0;
 }
 
+/* Skip link – hidden above the viewport until focused.
+   The transparent border becomes visible in forced-colours mode, where the
+   black background is replaced, so the link keeps a clear edge. */
 .skip-link {
   position: absolute;
   inset-block-start: -100%;
@@ -224,21 +313,41 @@ search form {
   color: var(--white);
   font-weight: bold;
   text-decoration: none;
-  border-bottom-left-radius: var(--radius, 4px);
-  border-bottom-right-radius: var(--radius, 4px);
+  border: 2px solid transparent;
+  border-end-start-radius: var(--radius);
+  border-end-end-radius: var(--radius);
   transition: inset-block-start var(--duration) var(--ease);
 }
 
-.skip-link:focus-visible {
+/* :focus (not :focus-visible): the skip link must appear whenever it has
+   focus, including focus moved by script. The global :focus-visible ring
+   still applies on keyboard focus. */
+.skip-link:focus {
   inset-block-start: 0;
-  outline: 3px solid var(--a11y-focus);
 }
 
+/* Reduced motion: now also covers ::before / ::after (missed before 6.2) */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* 10. USER CONTRAST PREFERENCES
+   ------------------------------------------------------------ */
+
+/* "Increase contrast" (macOS / iOS / Windows): darker body text, muted text
+   is no longer muted, heavier link underline. */
+@media (prefers-contrast: more) {
+  :root {
+    --text-main:  #222222; /* 15.9:1 on white */
+    --text-muted: var(--text-main);
+  }
+
+  a {
+    text-decoration-thickness: 2px;
   }
 }
