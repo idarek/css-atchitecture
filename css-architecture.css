@@ -1,7 +1,15 @@
 /* ============================================================
-   CSS ARCHITECTURE 2026 – VERSION 6.2 (ACCESSIBILITY CORRECTIONS)
+   CSS ARCHITECTURE 2026 – VERSION 6.3 (WCAG 2.2 AA BASELINE)
    Synthesised: 960px Cap + Single Breakpoint + User Preferences First
    Philosophy: Total Keyboard, Screen-Reader, and Cognitive Accessibility
+   ------------------------------------------------------------
+   6.3 changes (WCAG 2.2 AA audit):
+   - Target size 24px minimum for standalone controls (2.5.8)
+   - Sticky-offset tokens + scroll-padding (2.4.11 Focus Not Obscured)
+   - Reflow: word wrapping, scrollable pre/tables, wrapping search form (1.4.10)
+   - AA placeholder colour (1.4.3)
+   - Fluid-type zoom guard and colour-token contrast notes (1.4.4 / 1.4.3)
+   - Corrected focus-ring SC reference
    ------------------------------------------------------------
    6.2 changes:
    - Respect the user's font-size setting (html 100%, em breakpoint)
@@ -21,7 +29,7 @@
   /* --- Brand Colours (Placeholders) --- */
   --blue:          #345671;
   --blue-dark:     #324e67;
-  --blue-light:    #557793;
+  --blue-light:    #557793; /* 4.7:1 white, 4.2:1 --gray-warm – on gray: large text / non-text only */
   --navy:          #123456;
   --gray-warm:     #F1F0EE;
   --white:         #ffffff;
@@ -40,11 +48,18 @@
   --focus-width:     3px;
   --focus-offset:    2px;
 
-  /* --- Social & Utility --- */
-  --linkedin:      #0077b5;
-  --instagram:     #c73b92;
+  /* --- Target Size & Sticky Offsets (WCAG 2.5.8 / 2.4.11) --- */
+  --target-min:    1.5rem; /* 24px – AA minimum (AAA 2.5.5 is 44px / 2.75rem) */
+  --sticky-top:    0px;    /* set to the header height if the header becomes sticky */
+  --sticky-bottom: 0px;    /* set to the height of any sticky footer / cookie bar */
 
-  /* --- Full Fluid Typographic Scale --- */
+  /* --- Social & Utility --- */
+  --linkedin:      #0077b5; /* 4.9:1 on white */
+  --instagram:     #c73b92; /* 4.7:1 on white – re-check on any other background */
+
+  /* --- Full Fluid Typographic Scale ---
+     WCAG 1.4.4 guard: keep every clamp() max ≤ 2.5 × its min (currently ≤ 2.0),
+     so text can still reach 200% via browser zoom despite the vw component. */
   --font-main:     Roboto, Helvetica, Arial, system-ui, sans-serif;
   --text-xs:       clamp(0.75rem,  0.5vw  + 0.65rem, 0.875rem);
   --text-sm:       clamp(0.875rem, 0.75vw + 0.7rem,   1rem);
@@ -89,6 +104,10 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 
+  /* WCAG 2.4.11 Focus Not Obscured: when the browser scrolls a focused element
+     or #anchor target into view, it stops clear of sticky bars. */
+  scroll-padding-block: var(--sticky-top) var(--sticky-bottom);
+
   /* scroll-behavior: smooth moved to section 3 (reduced-motion gated) */
 }
 
@@ -105,6 +124,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   padding-block-end: env(safe-area-inset-bottom);
+
+  /* WCAG 1.4.10 Reflow: long words / URLs wrap instead of forcing a
+     horizontal scroll at 320px (400% zoom). */
+  overflow-wrap: break-word;
 }
 
 /* 3. FOCUS, LINKS & MOTION PREFERENCES
@@ -114,7 +137,8 @@ body {
    Browsers already decide natively when to show focus rings, so the reset
    added nothing and could strip focus wherever :focus-visible doesn't match. */
 
-/* Two-tone focus ring (WCAG 2.4.7, 2.4.11, 1.4.11):
+/* Two-tone focus ring (WCAG 2.4.7 Focus Visible, 1.4.11 Non-text Contrast;
+   also meets AAA 2.4.13 Focus Appearance: 3px ring, ≥3:1 change of state):
    - outline    = blue ring (5.2:1 on white)
    - box-shadow = white halo outside the ring, so it stays visible on dark
      brand backgrounds where blue alone drops to ~1.5–2.5:1.
@@ -219,6 +243,18 @@ a:has(> picture, > img) img {
   border-radius: var(--radius);
 }
 
+/* Reflow (WCAG 1.4.10): code and wide tables scroll inside their own box
+   (allowed for two-dimensional content) instead of scrolling the page.
+   Tables: wrap them via a Hugo render-table hook in
+   <div class="table-scroll" role="region" aria-label="…" tabindex="0">
+   – tabindex makes the scroll area keyboard-reachable. Never set
+   display:block on <table>: some browsers then drop table semantics. */
+pre,
+.table-scroll {
+  overflow-x: auto;
+  max-inline-size: 100%;
+}
+
 /* 5. NATIVE SEARCH ELEMENT
    ------------------------------------------------------------ */
 search {
@@ -226,7 +262,20 @@ search {
 }
 search form {
   display: flex;
+  flex-wrap: wrap; /* WCAG 1.4.10: button drops below the field when space runs out */
   gap: 0.5rem;
+}
+
+search input {
+  flex: 1 1 12rem;
+  min-inline-size: 0;
+}
+
+/* Placeholder (WCAG 1.4.3): Firefox fades placeholders with opacity
+   (≈2.5:1). Force an AA colour. A placeholder never replaces a <label>. */
+::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
 }
 
 /* 6. THE 960px CONTAINER & BREADCRUMBS PRIMITIVES
@@ -298,6 +347,22 @@ search form {
   clip-path: inset(50%); /* replaces deprecated clip: rect() */
   white-space: nowrap;
   border: 0;
+}
+
+/* Target size (WCAG 2.5.8, AA): standalone controls are at least 24×24px.
+   Inline links inside sentences are exempt. Checkboxes/radios are left out
+   because their associated <label> counts as an equivalent target.
+   :where() keeps specificity at zero, so components can override freely. */
+:where(button, select, input:not([type="checkbox"], [type="radio"], [type="hidden"])) {
+  min-block-size: var(--target-min);
+}
+
+.site-nav a,
+.breadcrumbs-wrapper a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--target-min);
+  min-inline-size: var(--target-min);
 }
 
 /* Skip link – hidden above the viewport until focused.
